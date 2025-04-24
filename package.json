@@ -1,0 +1,188 @@
+{
+  "name": "codepadi",
+  "displayName": "Codepadi",
+  "description": "Multi-Channel Protocol agent for VS Code",
+  "version": "1.0.0",
+  "publisher": "codepadi",
+  "icon": "resources/codepadi-icon.png",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codepadi.connect",
+        "title": "Connect to Server",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "codepadi.disconnect",
+        "title": "Disconnect from Server",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "codepadi.addServer",
+        "title": "Add Server",
+        "icon": "$(add)"
+      },
+      {
+        "command": "codepadi.removeServer",
+        "title": "Remove Server",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codepadi.showLogs",
+        "title": "Show Logs",
+        "icon": "$(output)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codepadi-explorer",
+          "title": "Codepadi",
+          "icon": "resources/codepadi-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "codepadi-explorer": [
+        {
+          "id": "mcpServers",
+          "name": "MCP Servers",
+          "icon": "resources/mcpServers-icon.svg"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "codepadi.addServer",
+          "when": "view == mcpServers",
+          "group": "navigation"
+        },
+        {
+          "command": "codepadi.showLogs",
+          "when": "view == mcpServers",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codepadi.connect",
+          "when": "view == mcpServers && viewItem == disconnectedServer",
+          "group": "inline"
+        },
+        {
+          "command": "codepadi.disconnect",
+          "when": "view == mcpServers && viewItem == connectedServer",
+          "group": "inline"
+        },
+        {
+          "command": "codepadi.removeServer",
+          "when": "view == mcpServers",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Codepadi",
+      "properties": {
+        "codepadi.servers": {
+          "type": "array",
+          "default": [],
+          "description": "List of MCP servers"
+        },
+        "codepadi.logLevel": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "info",
+          "description": "Log level for Codepadi"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-icon": "node scripts/convert-icon.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/vscode": "^1.99.1",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^2.24.0",
+    "eslint": "^9.25.1",
+    "sharp": "^0.34.1",
+    "typescript": "^5.8.3",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "agent-base": "^6.0.2",
+    "axios": "^1.8.4",
+    "balanced-match": "^1.0.2",
+    "big-integer": "^1.6.52",
+    "binary": "^0.3.0",
+    "bluebird": "^3.4.7",
+    "brace-expansion": "^1.1.11",
+    "buffer-indexof-polyfill": "^1.0.2",
+    "buffers": "^0.1.1",
+    "chainsaw": "^0.1.0",
+    "concat-map": "^0.0.1",
+    "core-util-is": "^1.0.3",
+    "debug": "^4.4.0",
+    "duplexer2": "^0.1.4",
+    "fs.realpath": "^1.0.0",
+    "fstream": "^1.0.12",
+    "glob": "^7.2.3",
+    "graceful-fs": "^4.2.11",
+    "http-proxy-agent": "^4.0.1",
+    "https-proxy-agent": "^5.0.1",
+    "inflight": "^1.0.6",
+    "inherits": "^2.0.4",
+    "isarray": "^1.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "listenercount": "^1.0.1",
+    "minimatch": "^3.1.2",
+    "minimist": "^1.2.8",
+    "mkdirp": "^0.5.6",
+    "ms": "^2.1.3",
+    "once": "^1.4.0",
+    "path-is-absolute": "^1.0.1",
+    "process-nextick-args": "^2.0.1",
+    "protobufjs": "^7.5.0",
+    "readable-stream": "^2.3.8",
+    "rimraf": "^3.0.2",
+    "safe-buffer": "^5.1.2",
+    "setimmediate": "^1.0.5",
+    "socket.io-client": "^4.8.1",
+    "string_decoder": "^1.1.1",
+    "traverse": "^0.3.9",
+    "undici-types": "^6.21.0",
+    "unzipper": "^0.10.14",
+    "util-deprecate": "^1.0.2",
+    "winston": "^3.17.0",
+    "wrappy": "^1.0.2",
+    "ws": "^8.18.1"
+  }
+}
