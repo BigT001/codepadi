@@ -11,7 +11,9 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:mcpServers"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -39,6 +41,21 @@
         "command": "codepadi.showLogs",
         "title": "Show Logs",
         "icon": "$(output)"
+      },
+      {
+        "command": "codepadi.executeCommand",
+        "title": "Execute Command",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "codepadi.testConnection",
+        "title": "Test Server Connection",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "codepadi.clearLogs",
+        "title": "Clear Logs",
+        "icon": "$(clear-all)"
       }
     ],
     "viewsContainers": {
@@ -84,9 +101,33 @@
           "group": "inline"
         },
         {
+          "command": "codepadi.executeCommand",
+          "when": "view == mcpServers && viewItem == connectedServer",
+          "group": "inline"
+        },
+        {
+          "command": "codepadi.testConnection",
+          "when": "view == mcpServers",
+          "group": "inline"
+        },
+        {
           "command": "codepadi.removeServer",
           "when": "view == mcpServers",
           "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "codepadi.executeCommand",
+          "when": "codepadi:hasConnectedServers"
+        },
+        {
+          "command": "codepadi.testConnection",
+          "when": "true"
+        },
+        {
+          "command": "codepadi.clearLogs",
+          "when": "true"
         }
       ]
     },
@@ -108,6 +149,21 @@
           ],
           "default": "info",
           "description": "Log level for Codepadi"
+        },
+        "codepadi.reconnectAttempts": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of reconnection attempts for WebSocket connections"
+        },
+        "codepadi.reconnectInterval": {
+          "type": "number",
+          "default": 3000,
+          "description": "Interval between reconnection attempts (in milliseconds)"
+        },
+        "codepadi.connectionTimeout": {
+          "type": "number",
+          "default": 10000,
+          "description": "Connection timeout in milliseconds"
         }
       }
     }
@@ -118,16 +174,24 @@
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "package": "vsce package",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node ./out/test/runTest.js",
     "create-icon": "node scripts/convert-icon.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "protocol",
+    "websocket",
+    "http",
+    "grpc",
+    "client",
+    "server",
+    "communication"
+  ],
+  "author": "Codepadi Team",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.14.1",
     "@types/vscode": "^1.99.1",
-    "@types/ws": "^8.18.1",
+    "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
     "@vscode/test-electron": "^2.5.2",
@@ -138,51 +202,27 @@
     "vscode-test": "^1.6.1"
   },
   "dependencies": {
-    "agent-base": "^6.0.2",
+    "@grpc/grpc-js": "^1.13.3",
+    "@grpc/proto-loader": "^0.7.15",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "axios": "^1.8.4",
-    "balanced-match": "^1.0.2",
-    "big-integer": "^1.6.52",
-    "binary": "^0.3.0",
-    "bluebird": "^3.4.7",
-    "brace-expansion": "^1.1.11",
-    "buffer-indexof-polyfill": "^1.0.2",
-    "buffers": "^0.1.1",
-    "chainsaw": "^0.1.0",
-    "concat-map": "^0.0.1",
-    "core-util-is": "^1.0.3",
-    "debug": "^4.4.0",
-    "duplexer2": "^0.1.4",
-    "fs.realpath": "^1.0.0",
-    "fstream": "^1.0.12",
-    "glob": "^7.2.3",
-    "graceful-fs": "^4.2.11",
-    "http-proxy-agent": "^4.0.1",
-    "https-proxy-agent": "^5.0.1",
-    "inflight": "^1.0.6",
-    "inherits": "^2.0.4",
-    "isarray": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
-    "listenercount": "^1.0.1",
-    "minimatch": "^3.1.2",
-    "minimist": "^1.2.8",
-    "mkdirp": "^0.5.6",
-    "ms": "^2.1.3",
-    "once": "^1.4.0",
-    "path-is-absolute": "^1.0.1",
-    "process-nextick-args": "^2.0.1",
-    "protobufjs": "^7.5.0",
-    "readable-stream": "^2.3.8",
-    "rimraf": "^3.0.2",
-    "safe-buffer": "^5.1.2",
-    "setimmediate": "^1.0.5",
+    "reconnecting-websocket": "^4.4.0",
     "socket.io-client": "^4.8.1",
-    "string_decoder": "^1.1.1",
-    "traverse": "^0.3.9",
-    "undici-types": "^6.21.0",
-    "unzipper": "^0.10.14",
-    "util-deprecate": "^1.0.2",
     "winston": "^3.17.0",
-    "wrappy": "^1.0.2",
     "ws": "^8.18.1"
-  }
+  },
+  "files": [
+    "out/**/*",
+    "resources/**/*",
+    "proto/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codepadi/codepadi-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/codepadi/codepadi-vscode/issues"
+  },
+  "homepage": "https://codepadi.com"
 }

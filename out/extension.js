@@ -39,12 +39,14 @@ const vscode = __importStar(require("vscode"));
 const serverManager_1 = require("./mcp/serverManager");
 const serverTreeProvider_1 = require("./ui/serverTreeProvider");
 const logger_1 = require("./utils/logger");
+const promptService_1 = require("./services/promptService");
 async function activate(context) {
     // Initialize logger
     const logger = new logger_1.Logger('Extension');
     logger.info('Codepadi extension is now active');
-    // Initialize server manager
+    // Initialize services
     const serverManager = new serverManager_1.ServerManager(context);
+    const promptService = new promptService_1.PromptService();
     // Register tree view providers
     const serverTreeProvider = new serverTreeProvider_1.ServerTreeProvider(serverManager);
     const serverTreeView = vscode.window.createTreeView('mcpServers', {
@@ -53,7 +55,7 @@ async function activate(context) {
     });
     context.subscriptions.push(serverTreeView);
     // Register commands
-    registerCommands(context, serverManager, serverTreeProvider);
+    registerCommands(context, serverManager, serverTreeProvider, promptService);
     // Create status bar item
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     statusBarItem.text = "$(plug) Codepadi";
@@ -63,7 +65,7 @@ async function activate(context) {
     context.subscriptions.push(statusBarItem);
     logger.info('Codepadi extension initialized successfully');
 }
-function registerCommands(context, serverManager, serverTreeProvider) {
+function registerCommands(context, serverManager, serverTreeProvider, promptService) {
     // Connect to server command
     context.subscriptions.push(vscode.commands.registerCommand('codepadi.connect', async (treeItem) => {
         let serverId;
@@ -201,6 +203,39 @@ function registerCommands(context, serverManager, serverTreeProvider) {
     // Show logs command
     context.subscriptions.push(vscode.commands.registerCommand('codepadi.showLogs', () => {
         logger_1.Logger.show();
+    }));
+    // Execute command prompt
+    context.subscriptions.push(vscode.commands.registerCommand('codepadi.executeCommand', async (treeItem) => {
+        let client;
+        if (treeItem && treeItem.server) {
+            client = serverManager.getClient(treeItem.server.id);
+        }
+        else {
+            const connectedServers = serverManager.getConnectedServers();
+            if (connectedServers.length === 0) {
+                vscode.window.showInformationMessage('No connected servers available. Please connect to a server first.');
+                return;
+            }
+            if (connectedServers.length === 1) {
+                client = serverManager.getClient(connectedServers[0].id);
+            }
+            else {
+                const serverOptions = connectedServers.map(server => ({
+                    label: server.name,
+                    description: server.url,
+                    serverId: server.id
+                }));
+                const selected = await vscode.window.showQuickPick(serverOptions, {
+                    placeHolder: 'Select a server to execute command on'
+                });
+                if (selected) {
+                    client = serverManager.getClient(selected.serverId);
+                }
+            }
+        }
+        if (client) {
+            await promptService.showCommandPrompt(client);
+        }
     }));
 }
 function deactivate() {
